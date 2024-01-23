@@ -1,5 +1,6 @@
 package com.sparta.schedule_management.service;
 
+import com.sparta.schedule_management.Exception.ForbiddenException;
 import com.sparta.schedule_management.dto.ScheduleRequestDto;
 import com.sparta.schedule_management.dto.ScheduleResponseDto;
 import com.sparta.schedule_management.entity.Schedule;
@@ -38,19 +39,29 @@ public class ScheduleService {
     }
 
     @Transactional
-    public ScheduleResponseDto updateSchedule(Long id, ScheduleRequestDto scheduleRequestDto) {
+    public ScheduleResponseDto updateSchedule(Long id,String password, ScheduleRequestDto scheduleRequestDto) throws ForbiddenException {
         Schedule schedule = findSchedule(id);
-        schedule.update(scheduleRequestDto);
-        ScheduleResponseDto scheduleResponseDto = new ScheduleResponseDto(schedule);
-        return scheduleResponseDto;
+        if(password.equals(schedule.getPassword())){
+            schedule.update(scheduleRequestDto);
+            ScheduleResponseDto scheduleResponseDto = new ScheduleResponseDto(schedule);
+            return scheduleResponseDto;
+        }
+        else{
+            throw new ForbiddenException();
+        }
     }
 
-    public String deleteSchedule(Long id) {
+    public String deleteSchedule(Long id,String password) throws ForbiddenException {
         Schedule schedule = findSchedule(id);
-        scheduleRepository.delete(schedule);
-        return id + "번 일정 삭제";
-
+        if(password.equals(schedule.getPassword())){
+            scheduleRepository.delete(schedule);
+            return id + "번 일정 삭제";
+        }
+        else{
+            throw new ForbiddenException();
+        }
     }
+
 
 
     private Schedule findSchedule(Long id) {
