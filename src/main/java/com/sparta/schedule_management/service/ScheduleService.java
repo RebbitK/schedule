@@ -3,12 +3,15 @@ package com.sparta.schedule_management.service;
 import com.sparta.schedule_management.Exception.ForbiddenException;
 import com.sparta.schedule_management.dto.ScheduleRequestDto;
 import com.sparta.schedule_management.dto.ScheduleResponseDto;
+import com.sparta.schedule_management.dto.StateResponseDto;
 import com.sparta.schedule_management.entity.Schedule;
 import com.sparta.schedule_management.repository.ScheduleRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
 
@@ -47,33 +50,39 @@ public class ScheduleService {
         return scheduleResponseDto;
     }
 
-    public Long deleteSchedule(Long id,String password) {
-
+    public String deleteSchedule(Long id) {
         Schedule schedule = findSchedule(id);
-        if(passwordCheckSchedule(password,schedule)){
-            scheduleRepository.delete(schedule);
-            return id;
-        }
-        else{
+        scheduleRepository.delete(schedule);
+        return id+"번 일정 삭제";
 
-        }
+    }
 
+    public boolean passwordCheckSchedule(Long id,String password) {
+        Schedule schedule = findSchedule(id);
+        return schedule.getPassword().equals(password);
+    }
+
+    public StateResponseDto stateSchedule(Long id, String password){
+        try {
+            String url = "http://localhost:8080/api/schedules/" + id + "/" + password;
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(url))
+                    .GET()
+                    .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            StateResponseDto stateResponseDto = new StateResponseDto(response.statusCode(),"비밀번호가 틀렸습니다.");
+            return stateResponseDto;
+        } catch (Exception e) {
+            StateResponseDto stateResponseDto = new StateResponseDto(404,"잘못된 접근입니다.");
+            return stateResponseDto;
+        }
     }
 
     private Schedule findSchedule(Long id) {
         return scheduleRepository.findById(id).orElseThrow(() ->
                 new IllegalArgumentException("선택하신 일정은 존재하지 않습니다.")
         );
-    }
-
-    private boolean passwordCheckSchedule(String password,Schedule schedule){
-        int statusCode = 0;
-        HttpClient client = HttpClientBuilder.create().build();
-
-        HttpResponse response = client.execute(new HttpGet(url));
-
-        statusCode = response.getStatusLine().getStatusCode();
-        return password.equals(schedule.getPassword());
     }
 
 }

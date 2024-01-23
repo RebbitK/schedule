@@ -3,6 +3,7 @@ package com.sparta.schedule_management.controller;
 import com.sparta.schedule_management.dto.ScheduleRequestDto;
 import com.sparta.schedule_management.dto.ScheduleResponseDto;
 import com.sparta.schedule_management.service.ScheduleService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,7 +38,12 @@ public class ScheduleController {
     }
 
     @DeleteMapping("/schedules/{id}/{password}")
-    public Long deleteSchedule(@PathVariable Long id, @PathVariable String password){
-        return  scheduleService.deleteSchedule(id,password);
+    public ResponseEntity<?> deleteSchedule(@PathVariable Long id, @PathVariable String password){
+        if(scheduleService.passwordCheckSchedule(id,password)){
+            return ResponseEntity.ok(scheduleService.deleteSchedule(id));
+        }
+        else{
+            return ResponseEntity.ok(scheduleService.stateSchedule(id, password));
+        }
     }
 }

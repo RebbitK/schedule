@@ -6,6 +6,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class StateResponseDto {
-    private String errorCode;
-    private String errorMessage;
+    private int stateCode;
+    private String stateMessage;
 }
