@@ -1,8 +1,8 @@
 package com.sparta.schedule_management.service;
 
-import com.sparta.schedule_management.Exception.ForbiddenException;
 import com.sparta.schedule_management.dto.ScheduleRequestDto;
 import com.sparta.schedule_management.dto.ScheduleResponseDto;
+import com.sparta.schedule_management.dto.StateResponseDto;
 import com.sparta.schedule_management.entity.Schedule;
 import com.sparta.schedule_management.repository.ScheduleRepository;
 import org.springframework.stereotype.Service;
@@ -39,29 +39,28 @@ public class ScheduleService {
     }
 
     @Transactional
-    public ScheduleResponseDto updateSchedule(Long id,String password, ScheduleRequestDto scheduleRequestDto) throws ForbiddenException {
+    public ScheduleResponseDto updateSchedule(Long id, ScheduleRequestDto scheduleRequestDto) {
         Schedule schedule = findSchedule(id);
-        if(password.equals(schedule.getPassword())){
-            schedule.update(scheduleRequestDto);
-            ScheduleResponseDto scheduleResponseDto = new ScheduleResponseDto(schedule);
-            return scheduleResponseDto;
-        }
-        else{
-            throw new ForbiddenException();
-        }
+        schedule.update(scheduleRequestDto);
+        ScheduleResponseDto scheduleResponseDto = new ScheduleResponseDto(schedule);
+        return scheduleResponseDto;
+
     }
 
-    public String deleteSchedule(Long id,String password) throws ForbiddenException {
+    public String deleteSchedule(Long id) {
         Schedule schedule = findSchedule(id);
-        if(password.equals(schedule.getPassword())){
-            scheduleRepository.delete(schedule);
-            return id + "번 일정 삭제";
-        }
-        else{
-            throw new ForbiddenException();
-        }
+        scheduleRepository.delete(schedule);
+        return id + "번 일정 삭제";
     }
 
+    public boolean checkPassword(Long id, String password) {
+        Schedule schedule = findSchedule(id);
+        return password.equals(schedule.getPassword());
+    }
+
+    public StateResponseDto notPassword() {
+        return new StateResponseDto(403, "비밀번호가 틀렸습니다.");
+    }
 
 
     private Schedule findSchedule(Long id) {

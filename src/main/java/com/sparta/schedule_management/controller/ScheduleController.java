@@ -1,9 +1,9 @@
 package com.sparta.schedule_management.controller;
 
-import com.sparta.schedule_management.Exception.ForbiddenException;
 import com.sparta.schedule_management.dto.ScheduleRequestDto;
 import com.sparta.schedule_management.dto.ScheduleResponseDto;
 import com.sparta.schedule_management.service.ScheduleService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,13 +33,13 @@ public class ScheduleController {
     }
 
     @PutMapping("/schedules/{id}/{password}")
-    public ScheduleResponseDto updateSchedule(@PathVariable Long id,@PathVariable String password,@RequestBody ScheduleRequestDto scheduleRequestDto) throws ForbiddenException {
-        return scheduleService.updateSchedule(id,password,scheduleRequestDto);
+    public ResponseEntity<?> updateSchedule(@PathVariable Long id, @PathVariable String password, @RequestBody ScheduleRequestDto scheduleRequestDto) {
+        return scheduleService.checkPassword(id,password) ? ResponseEntity.ok(scheduleService.updateSchedule(id,scheduleRequestDto)) : ResponseEntity.ok(scheduleService.notPassword());
     }
 
     @DeleteMapping("/schedules/{id}/{password}")
-    public String deleteSchedule(@PathVariable Long id, @PathVariable String password) throws ForbiddenException {
-        return scheduleService.deleteSchedule(id,password);
+    public ResponseEntity<?> deleteSchedule(@PathVariable Long id, @PathVariable String password){
+        return scheduleService.checkPassword(id,password) ? ResponseEntity.ok(scheduleService.deleteSchedule(id)) : ResponseEntity.ok(scheduleService.notPassword());
 
     }
 }
